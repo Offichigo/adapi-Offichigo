@@ -45,6 +45,11 @@ app.put("/skills/:id", async (req, res) => {
   res.json(rows[0]);
 });
 
+app.delete("/skills/:id", async (req, res) => {
+  await pool.query("DELETE FROM skills WHERE id = $1", [req.params.id]);
+  res.json({ message: "Delete a skill" });
+});
+
 // ======= THEMES =======
 app.get("/themes/", async function (req, res) {
   const { rows } = await pool.query("SELECT * from themes");
@@ -65,6 +70,20 @@ app.post("/themes", async (req, res) => {
     [name, description],
   );
   res.status(201).json(rows[0]);
+});
+
+app.put("/themes/:id", async (req, res) => {
+  const { name, description } = req.body; // ✅ description ajoutée
+  const { rows } = await pool.query(
+    "UPDATE themes SET name = $1, description = $2 WHERE id = $3 RETURNING *",
+    [name, description, req.params.id],
+  );
+  res.json(rows[0]);
+});
+
+app.delete("/themes/:id", async (req, res) => {
+  await pool.query("DELETE FROM themes WHERE id = $1", [req.params.id]);
+  res.json({ message: "Delete a themes" });
 });
 
 // ======= RESOURCES =======
@@ -89,6 +108,21 @@ app.post("/resources", async (req, res) => {
   );
   res.status(201).json(rows[0]);
 });
+
+app.put("/resources/:id", async (req, res) => {
+  const { type, title, description, url, is_ada, theme_id } = req.body; // ✅ toutes les colonnes
+  const { rows } = await pool.query(
+    "UPDATE resources SET type = $1, title = $2, description = $3, url = $4, is_ada = $5, theme_id = $6 WHERE id = $7 RETURNING *",
+    [type, title, description, url, is_ada, theme_id, req.params.id],
+  );
+  res.json(rows[0]);
+});
+
+app.delete("/resources/:id", async (req, res) => {
+  await pool.query("DELETE FROM resources WHERE id = $1", [req.params.id]);
+  res.json({ message: "Delete a resources" });
+});
+
 // ======= RESOURCES_SKILLS =======
 
 app.get("/resources_skills/", async function (req, res) {
@@ -123,4 +157,12 @@ app.post("/resources_skills", async (req, res) => {
     [resources_id, skill_id],
   );
   res.status(201).json(rows[0]);
+});
+
+app.delete("/resources_skills/:skill_id/:resources_id", async (req, res) => {
+  await pool.query(
+    "DELETE FROM resources_skills WHERE skill_id = $1 AND resources_id = $2",
+    [req.params.skill_id, req.params.resources_id],
+  );
+  res.json({ message: "Delete a link" });
 });
